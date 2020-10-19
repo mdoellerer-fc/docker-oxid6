@@ -17,7 +17,13 @@ RUN apt-get update -y && \
 
 # install php extensions
 RUN docker-php-ext-configure gd --with-jpeg && \
-  docker-php-ext-install -j$(nproc) zip bcmath soap pdo_mysql gd
+  docker-php-ext-install -j$(nproc) zip bcmath soap pdo_mysql gd mysqli
+
+# ioncube loader
+RUN cd /usr/local \
+    && wget https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz \
+    && tar xzf ioncube_loaders_lin_x86-64.tar.gz \
+    && bash -c 'echo "zend_extension = /usr/local/ioncube/ioncube_loader_lin_7.4.so" > /usr/local/etc/php/conf.d/docker-php-ext-ioncube.ini'
 
 # composer stuff
 RUN php -r 'readfile("https://getcomposer.org/installer");' > composer-setup.php \
@@ -35,6 +41,6 @@ RUN chmod 777 /entrypoint.sh && chmod 777 /entrypoint.d/*
 RUN /usr/sbin/a2enmod rewrite && /usr/sbin/a2enmod headers && /usr/sbin/a2enmod expires && /usr/sbin/a2enmod ssl
 COPY ./files/000-default.conf /etc/apache2/sites-available/000-default.conf
 
-RUN chown -R www-data:www-data /var/www/html/source/
+RUN chown -R www-data:www-data /var/www/html/
 
 CMD ["apache2-foreground"]
