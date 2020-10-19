@@ -1,6 +1,6 @@
-FROM php:7.3-apache
+FROM php:7.4-apache
 
-MAINTAINER module@proudcommerce.com
+MAINTAINER marcos.doellerer@fatchip.de
 
 # timezone / date   
 RUN echo "Europe/Berlin" > /etc/timezone && dpkg-reconfigure -f noninteractive tzdata
@@ -16,7 +16,7 @@ RUN apt-get update -y && \
   echo "export TERM=xterm" >> /root/.bashrc
 
 # install php extensions
-RUN docker-php-ext-configure gd --with-jpeg-dir=/usr/local/ && \
+RUN docker-php-ext-configure gd --with-jpeg && \
   docker-php-ext-install -j$(nproc) zip bcmath soap pdo_mysql gd
 
 # composer stuff
@@ -35,8 +35,6 @@ RUN chmod 777 /entrypoint.sh && chmod 777 /entrypoint.d/*
 RUN /usr/sbin/a2enmod rewrite && /usr/sbin/a2enmod headers && /usr/sbin/a2enmod expires && /usr/sbin/a2enmod ssl
 COPY ./files/000-default.conf /etc/apache2/sites-available/000-default.conf
 
-# oxid stuff
-COPY ./files/config.inc.php /var/www/config.inc.php
+RUN chown -R www-data:www-data /var/www/html/source/
 
-ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apache2-foreground"]
