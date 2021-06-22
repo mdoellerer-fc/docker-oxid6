@@ -3,16 +3,17 @@ version: '3'
 services:
 
   oxid6_apache:
-    build: container/apache_php7/.
+    build: container/apache_php8/.
     hostname: ${DOMAIN}
-    restart: always
     depends_on:
       - oxid6_mysql
     volumes:
-      - ./medisana/:/var/www/html/:cached
+      - ./data/www/:/var/www/html/:cached
     environment:
       DOMAIN: ${DOMAIN}
       APACHE_PORT: ${APACHE_PORT}
+      OXID_VERSION: ${OXID_VERSION}
+      OXID_DEMODATA: ${OXID_DEMODATA}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
@@ -25,7 +26,6 @@ services:
   oxid6_mysql:
     image: mysql:5.7
     hostname: mysql.${DOMAIN}
-    restart: always
     volumes:
       - ./data/mysql/:/var/lib/mysql
     environment:

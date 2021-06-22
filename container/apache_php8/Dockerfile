@@ -1,6 +1,6 @@
-FROM php:7.4-apache
+FROM php:8-apache
 
-MAINTAINER marcos.doellerer@fatchip.de
+MAINTAINER module@proudcommerce.com
 
 # timezone / date   
 RUN echo "Europe/Berlin" > /etc/timezone && dpkg-reconfigure -f noninteractive tzdata
@@ -16,18 +16,12 @@ RUN apt-get update -y && \
   echo "export TERM=xterm" >> /root/.bashrc
 
 # install php extensions
-RUN docker-php-ext-configure gd --with-jpeg && \
-  docker-php-ext-install -j$(nproc) zip bcmath soap pdo_mysql gd mysqli
-
-# ioncube loader
-RUN cd /usr/local \
-    && wget https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz \
-    && tar xzf ioncube_loaders_lin_x86-64.tar.gz \
-    && bash -c 'echo "zend_extension = /usr/local/ioncube/ioncube_loader_lin_7.4.so" > /usr/local/etc/php/conf.d/docker-php-ext-ioncube.ini'
+RUN docker-php-ext-configure gd --with-jpeg=/usr/include/ && \
+  docker-php-ext-install -j$(nproc) zip bcmath soap pdo_mysql
 
 # composer stuff
 RUN php -r 'readfile("https://getcomposer.org/installer");' > composer-setup.php \
-  && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+  && php composer-setup.php --2 --install-dir=/usr/local/bin --filename=composer \
   && rm -f composer-setup.php \
   && chown www-data:www-data /var/www
 
@@ -41,6 +35,8 @@ RUN chmod 777 /entrypoint.sh && chmod 777 /entrypoint.d/*
 RUN /usr/sbin/a2enmod rewrite && /usr/sbin/a2enmod headers && /usr/sbin/a2enmod expires && /usr/sbin/a2enmod ssl
 COPY ./files/000-default.conf /etc/apache2/sites-available/000-default.conf
 
-RUN chown -R www-data:www-data /var/www/html/
+# oxid stuff
+COPY ./files/config.inc.php /var/www/config.inc.php
 
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apache2-foreground"]

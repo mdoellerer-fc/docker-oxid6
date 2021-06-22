@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+sleep 12
+
 INSTALL_DEMODATA=${OXID_DEMODATA}
 
 # bootstrap oxid database/demodata
